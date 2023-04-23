@@ -1,4 +1,4 @@
-package com.urbanek.routingproblem.distances;
+package com.urbanek.routingproblem.geo.locations.dtos;
 
 public record TimeWindow(int startHour, int endHour) {
 }

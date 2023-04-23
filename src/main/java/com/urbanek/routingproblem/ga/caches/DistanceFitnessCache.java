@@ -1,5 +1,6 @@
-package com.urbanek.routingproblem.ga;
+package com.urbanek.routingproblem.ga.caches;
 
+import com.urbanek.routingproblem.ga.fitness.DistanceFitnessCalculationListener;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

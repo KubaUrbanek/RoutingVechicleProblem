@@ -1,13 +1,14 @@
-package com.urbanek.routingproblem.distances.identifier;
+package com.urbanek.routingproblem.geo.distances.services;
 
-import com.urbanek.routingproblem.distances.Location;
+import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class DistanceIdentifierFactory {
+public class DistanceIdentifierFactoryImpl implements DistanceIdentifierFactory {
     private final Map<String, DistanceIdentifier> distanceIdentifiersCache = new HashMap<>();
 
     public DistanceIdentifier getDistanceIdentifier(Location first, Location second) {

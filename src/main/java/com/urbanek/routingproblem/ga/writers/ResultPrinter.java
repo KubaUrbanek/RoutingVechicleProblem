@@ -1,7 +1,7 @@
-package com.urbanek.routingproblem.ga;
+package com.urbanek.routingproblem.ga.writers;
 
-import com.urbanek.routingproblem.distances.Location;
-import com.urbanek.routingproblem.distances.LocationRandomKeySeries;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

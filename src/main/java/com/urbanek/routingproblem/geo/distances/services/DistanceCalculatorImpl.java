@@ -1,8 +1,8 @@
-package com.urbanek.routingproblem.distances;
+package com.urbanek.routingproblem.geo.distances.services;
 
-import com.urbanek.routingproblem.distances.identifier.DistanceIdentifier;
-import com.urbanek.routingproblem.distances.identifier.DistanceIdentifierFactory;
-import com.urbanek.routingproblem.locations.LocationService;
+import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.geo.locations.services.LocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class DistanceCalculator {
+public class DistanceCalculatorImpl implements DistanceCalculator {
     private final LocationService locationService;
     private final DistanceIdentifierFactory distanceIdentifierFactory;
 

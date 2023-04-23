@@ -1,5 +1,6 @@
-package com.urbanek.routingproblem.distances;
+package com.urbanek.routingproblem.employes.dtos;
 
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import lombok.Getter;
 
 import java.util.List;

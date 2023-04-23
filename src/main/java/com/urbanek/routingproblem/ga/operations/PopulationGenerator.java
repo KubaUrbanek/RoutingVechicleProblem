@@ -1,9 +1,10 @@
-package com.urbanek.routingproblem.ga;
+package com.urbanek.routingproblem.ga.operations;
 
-import com.urbanek.routingproblem.distances.LocationRandomKey;
-import com.urbanek.routingproblem.distances.LocationRandomKeySeries;
-import com.urbanek.routingproblem.employes.EmployeeService;
-import com.urbanek.routingproblem.locations.LocationService;
+import com.urbanek.routingproblem.employes.services.EmployeeService;
+import com.urbanek.routingproblem.ga.config.Configs;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.geo.locations.services.LocationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

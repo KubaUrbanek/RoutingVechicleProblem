@@ -1,7 +1,7 @@
-package com.urbanek.routingproblem.employes;
+package com.urbanek.routingproblem.employes.services;
 
-import com.urbanek.routingproblem.distances.Employee;
-import com.urbanek.routingproblem.ga.Configs;
+import com.urbanek.routingproblem.employes.dtos.Employee;
+import com.urbanek.routingproblem.ga.config.Configs;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Random;
 
 @Service
-public class EmployeeService {
+public class EmployeeServiceImpl implements EmployeeService {
     private final Random rand = new Random();
 
     public Employee getRandomEmployee() {

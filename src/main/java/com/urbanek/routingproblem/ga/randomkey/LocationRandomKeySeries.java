@@ -1,5 +1,6 @@
-package com.urbanek.routingproblem.distances;
+package com.urbanek.routingproblem.ga.randomkey;
 
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import lombok.Builder;
 import lombok.Getter;
 

@@ -1,14 +1,20 @@
-package com.urbanek.routingproblem.ga;
+package com.urbanek.routingproblem.ga.solvers;
 
-import com.urbanek.routingproblem.distances.*;
-import com.urbanek.routingproblem.distances.identifier.DistanceIdentifier;
+import com.urbanek.routingproblem.employes.dtos.Employee;
+import com.urbanek.routingproblem.ga.config.Configs;
+import com.urbanek.routingproblem.ga.fitness.FitnessCalculator;
+import com.urbanek.routingproblem.ga.operations.PopulationGenerator;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.ga.writers.ResultPrinter;
+import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.geo.distances.services.DistanceCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 @Component

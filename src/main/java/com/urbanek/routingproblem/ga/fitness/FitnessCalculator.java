@@ -1,9 +1,10 @@
-package com.urbanek.routingproblem.ga;
+package com.urbanek.routingproblem.ga.fitness;
 
-import com.urbanek.routingproblem.distances.Location;
-import com.urbanek.routingproblem.distances.LocationRandomKeySeries;
-import com.urbanek.routingproblem.distances.identifier.DistanceIdentifier;
-import com.urbanek.routingproblem.distances.identifier.DistanceIdentifierFactory;
+import com.urbanek.routingproblem.ga.caches.DistanceFitnessCache;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
+import com.urbanek.routingproblem.geo.distances.services.DistanceIdentifierFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

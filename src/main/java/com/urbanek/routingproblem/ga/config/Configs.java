@@ -1,8 +1,8 @@
-package com.urbanek.routingproblem.ga;
+package com.urbanek.routingproblem.ga.config;
 
-import com.urbanek.routingproblem.distances.Coordinates;
-import com.urbanek.routingproblem.distances.Location;
-import com.urbanek.routingproblem.distances.Employee;
+import com.urbanek.routingproblem.geo.locations.dtos.Coordinates;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.employes.dtos.Employee;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.urbanek.routingproblem.distances.identifier;
+package com.urbanek.routingproblem.geo.distances.dtos;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;

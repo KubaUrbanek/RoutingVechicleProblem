@@ -1,9 +1,9 @@
-package com.urbanek.routingproblem.locations;
+package com.urbanek.routingproblem.geo.locations.services;
 
-import com.urbanek.routingproblem.distances.Location;
-import com.urbanek.routingproblem.distances.LocationRandomKey;
-import com.urbanek.routingproblem.employes.EmployeeService;
-import com.urbanek.routingproblem.ga.Configs;
+import com.urbanek.routingproblem.employes.services.EmployeeService;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
+import com.urbanek.routingproblem.ga.config.Configs;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +12,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class LocationService {
+public class LocationServiceImpl implements LocationService{
     private final EmployeeService employeeService;
 
     public List<Location> getAllLocations() {
         return Configs.LOCATIONS;
     }
-
 
     public Map<String, List<Location>> getOrderedLocationGroupByEmployee(List<LocationRandomKey> locationRandomKeys) {
         List<Integer> sortedIndexes = getLocationOrder(locationRandomKeys);
