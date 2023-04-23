@@ -30,6 +30,7 @@ public class Configs {
             new Employee("Wylonacznik", 350));
 
     public static final int DEPOT = 0;
+    public static final int ELITE_AMOUNT = 1;
     public static final int POPULATION_AMOUNT = 100;
     public static final int GENERATION_AMOUNT = 100;
 }

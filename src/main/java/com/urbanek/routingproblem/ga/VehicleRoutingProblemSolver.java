@@ -1,31 +1,35 @@
 package com.urbanek.routingproblem.ga;
 
-import com.urbanek.routingproblem.distances.DistanceCalculator;
-import com.urbanek.routingproblem.distances.Employee;
-import com.urbanek.routingproblem.distances.Location;
+import com.urbanek.routingproblem.distances.*;
+import com.urbanek.routingproblem.distances.identifier.DistanceIdentifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class VehicleRoutingProblemSolver {
     private final DistanceCalculator distanceCalculator;
     private final PopulationGenerator populationGenerator;
+    private final FitnessCalculator fitnessCalculator;
+    private final ResultPrinter resultPrinter;
 
     public void start() {
         assertInitialRules();
-        Map<String, Double> distances = distanceCalculator.calculateDistances(Configs.LOCATIONS);
-        List<List<Employee>> population = populationGenerator.generatePopulation(Configs.POPULATION_AMOUNT);
-
-        population.forEach(employees -> {
-            StringJoiner joiner = new StringJoiner("\n", "Generation \n", "\n");
-            employees.forEach(employee -> joiner.add(employee.toString()));
-            System.out.println(joiner);
-        });
+        Map<DistanceIdentifier, Double> distances = distanceCalculator.calculateDistances();
+        List<LocationRandomKeySeries> locationRandomKeySeriesList = populationGenerator.generateUsingRandomKeys();
+        Map<String, Double> seriesToFitnessMap = locationRandomKeySeriesList.stream()
+                .collect(Collectors.toUnmodifiableMap(LocationRandomKeySeries::getSeriesIdentifier,
+                        locationRandomKeySeries -> fitnessCalculator.calculateFitness(locationRandomKeySeries, distances)));
+        locationRandomKeySeriesList.stream()
+                .sorted(Comparator.comparingDouble(locationRandomKeySeries -> seriesToFitnessMap.get(locationRandomKeySeries.getSeriesIdentifier())))
+                .skip(Configs.ELITE_AMOUNT);
+        resultPrinter.printPopulation(locationRandomKeySeriesList, seriesToFitnessMap);
 
     }
 
