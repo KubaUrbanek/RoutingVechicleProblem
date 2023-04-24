@@ -32,5 +32,10 @@ public class Configs {
     public static final int DEPOT = 0;
     public static final int ELITE_AMOUNT = 1;
     public static final int POPULATION_AMOUNT = 100;
+
     public static final int GENERATION_AMOUNT = 100;
+    public static final double CROSSOVER_RATE = 0.7;
+    public static final double MUTATION_RATE = 0.01;
+    public static final int TOURNAMENT_SIZE = 4;
+
 }

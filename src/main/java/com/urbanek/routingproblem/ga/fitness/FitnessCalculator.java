@@ -1,10 +1,12 @@
 package com.urbanek.routingproblem.ga.fitness;
 
 import com.urbanek.routingproblem.ga.caches.DistanceFitnessCache;
-import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
 import com.urbanek.routingproblem.geo.distances.services.DistanceIdentifierFactory;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.geo.locations.services.LocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +21,10 @@ public class FitnessCalculator {
     private final List<DistanceFitnessCalculationListener> distanceFitnessCalculationListeners;
     private final DistanceFitnessCache distanceFitnessCache;
     private final DistanceIdentifierFactory distanceIdentifierFactory;
+    private final LocationService locationService;
 
-    public double calculateFitness(LocationRandomKeySeries locationRandomKeySeries, Map<DistanceIdentifier, Double> distances) {
-        Map<String, List<Location>> orderedLocationIndexesGroupByEmployee = locationRandomKeySeries.getOrderedLocationGroupByEmployee();
+    public double calculateFitness(Map<DistanceIdentifier, Double> distances, List<LocationRandomKey> locationRandomKeys) {
+        Map<String, List<Location>> orderedLocationIndexesGroupByEmployee = locationService.getOrderedLocationGroupByEmployee(locationRandomKeys);
         return orderedLocationIndexesGroupByEmployee.keySet()
                 .stream()
                 .map(orderedLocationIndexesGroupByEmployee::get)

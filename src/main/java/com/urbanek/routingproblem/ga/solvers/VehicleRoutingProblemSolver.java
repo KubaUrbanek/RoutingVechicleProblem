@@ -3,40 +3,73 @@ package com.urbanek.routingproblem.ga.solvers;
 import com.urbanek.routingproblem.employes.dtos.Employee;
 import com.urbanek.routingproblem.ga.config.Configs;
 import com.urbanek.routingproblem.ga.fitness.FitnessCalculator;
+import com.urbanek.routingproblem.ga.operations.EliteSelection;
 import com.urbanek.routingproblem.ga.operations.PopulationGenerator;
+import com.urbanek.routingproblem.ga.operations.SinglePointCrossover;
+import com.urbanek.routingproblem.ga.operations.TournamentSelection;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
-import com.urbanek.routingproblem.ga.writers.ResultPrinter;
+import com.urbanek.routingproblem.ga.statistics.StatisticsAggregator;
+import com.urbanek.routingproblem.ga.writers.ConsoleResultPrinter;
 import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
-import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import com.urbanek.routingproblem.geo.distances.services.DistanceCalculator;
+import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 public class VehicleRoutingProblemSolver {
     private final DistanceCalculator distanceCalculator;
     private final PopulationGenerator populationGenerator;
+    private final ConsoleResultPrinter resultPrinter;
+    private final TournamentSelection tournamentSelection;
+    private final EliteSelection eliteSelection;
+    private final SinglePointCrossover singlePointCrossover;
     private final FitnessCalculator fitnessCalculator;
-    private final ResultPrinter resultPrinter;
+    private final StatisticsAggregator statisticsAggregator;
 
     public void start() {
         assertInitialRules();
         Map<DistanceIdentifier, Double> distances = distanceCalculator.calculateDistances();
-        List<LocationRandomKeySeries> locationRandomKeySeriesList = populationGenerator.generateUsingRandomKeys();
-        Map<String, Double> seriesToFitnessMap = locationRandomKeySeriesList.stream()
-                .collect(Collectors.toUnmodifiableMap(LocationRandomKeySeries::getSeriesIdentifier,
-                        locationRandomKeySeries -> fitnessCalculator.calculateFitness(locationRandomKeySeries, distances)));
-        locationRandomKeySeriesList.stream()
-                .sorted(Comparator.comparingDouble(locationRandomKeySeries -> seriesToFitnessMap.get(locationRandomKeySeries.getSeriesIdentifier())))
-                .skip(Configs.ELITE_AMOUNT);
-        resultPrinter.printPopulation(locationRandomKeySeriesList, seriesToFitnessMap);
+        List<LocationRandomKeySeries> beginningPopulation = populationGenerator.generateUsingRandomKeys(distances);
+        AtomicReference<List<LocationRandomKeySeries>> currentPopulation = new AtomicReference<>(beginningPopulation);
 
+        IntStream.rangeClosed(1, Configs.GENERATION_AMOUNT).forEach(generationNumber -> {
+            statisticsAggregator.addGenerationStat(generationNumber, currentPopulation.get());
+            currentPopulation.set(performGaOperations(new ArrayList<>(currentPopulation.get())).stream()
+                    .map(series -> Objects.isNull(series.fitnessScore()) ? recreateSeriesWithFitness(series, distances) : series)
+                    .toList());
+
+        });
+
+        resultPrinter.printPopulation(statisticsAggregator);
+        statisticsAggregator.reset();
+
+    }
+
+    private List<LocationRandomKeySeries> performGaOperations(List<LocationRandomKeySeries> population) {
+        List<LocationRandomKeySeries> elitePopulation = eliteSelection.getElite(population);
+        population.removeAll(elitePopulation);
+
+        return Stream.concat(Stream.of(tournamentSelection.performSelection(population))
+                                .flatMap(populationGenerator -> singlePointCrossover.performCrossover(populationGenerator).stream()),
+                        elitePopulation.stream())
+                .toList();
+    }
+
+    private LocationRandomKeySeries recreateSeriesWithFitness(LocationRandomKeySeries person, Map<DistanceIdentifier, Double> distances) {
+        return LocationRandomKeySeries.builder()
+                .locationRandomKeys(person.locationRandomKeys())
+                .fitnessScore(fitnessCalculator.calculateFitness(distances, person.locationRandomKeys()))
+                .build();
     }
 
     private static void assertInitialRules() {
