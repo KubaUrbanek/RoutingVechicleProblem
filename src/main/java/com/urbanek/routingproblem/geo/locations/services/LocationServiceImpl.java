@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class LocationServiceImpl implements LocationService{
+public class LocationServiceImpl implements LocationService {
     private final EmployeeService employeeService;
 
     public List<Location> getAllLocations() {
@@ -20,22 +20,31 @@ public class LocationServiceImpl implements LocationService{
     }
 
     public Map<String, List<Location>> getOrderedLocationGroupByEmployee(List<LocationRandomKey> locationRandomKeys) {
-        List<Integer> sortedIndexes = getLocationOrder(locationRandomKeys);
 
-        Map<String, List<Location>> orderedLocationIndexesGroupByEmployee = groupLocationByEmployees(locationRandomKeys, sortedIndexes);
+        Map<String, List<Location>> orderedLocationIndexesGroupByEmployee = groupLocationByEmployees(locationRandomKeys);
         fillWithMissingEmployees(orderedLocationIndexesGroupByEmployee);
 
         return orderedLocationIndexesGroupByEmployee;
     }
 
-    private Map<String, List<Location>> groupLocationByEmployees(List<LocationRandomKey> locationRandomKeys, List<Integer> indexes) {
-        return new HashMap<>(indexes.stream()
-                .collect(Collectors.toUnmodifiableMap(index -> locationRandomKeys.get(index).employeeId(),
-                        (index) -> new ArrayList<>(Collections.singletonList(getLocationByIndex(index))),
+    private Map<String, List<Location>> groupLocationByEmployees(List<LocationRandomKey> locationRandomKeys) {
+        List<Integer> locationIdsInOrder = getLocationIdsInOrder(locationRandomKeys);
+
+        return new HashMap<>(locationIdsInOrder.stream()
+                .collect(Collectors.toUnmodifiableMap(locationId -> getEmployeeIdByLocation(locationRandomKeys, locationId),
+                        (locationId) -> new ArrayList<>(Collections.singletonList(getLocationById(locationId))),
                         (existingList, newList) -> {
                             existingList.addAll(newList);
                             return existingList;
                         })));
+    }
+
+    private static String getEmployeeIdByLocation(List<LocationRandomKey> locationRandomKeys, Integer locationId) {
+        return locationRandomKeys.stream()
+                .filter(locationRandomKey -> Objects.equals(locationRandomKey.locationId(), locationId))
+                .findFirst()
+                .orElseThrow()
+                .employeeId();
     }
 
     private void fillWithMissingEmployees(Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
@@ -44,18 +53,17 @@ public class LocationServiceImpl implements LocationService{
                 .forEach(employee -> orderedLocationIndexesGroupByEmployee.put(employee.getId(), Collections.emptyList()));
     }
 
-    private List<Integer> getLocationOrder(List<LocationRandomKey> locationRandomKeys) {
-        Integer[] indexes = new Integer[locationRandomKeys.size()];
-        for (int i = 0; i < indexes.length; i++) {
-            indexes[i] = i;
-        }
-        Arrays.sort(indexes, Comparator.comparingDouble(index -> locationRandomKeys.get(index).randomKey()));
-
-        return Arrays.stream(indexes)
+    private List<Integer> getLocationIdsInOrder(List<LocationRandomKey> locationRandomKeys) {
+        return locationRandomKeys.stream()
+                .sorted(Comparator.comparingDouble(LocationRandomKey::randomKey))
+                .map(LocationRandomKey::locationId)
                 .toList();
     }
 
-    private Location getLocationByIndex(int index) {
-        return Configs.LOCATIONS.get(index);
+    private Location getLocationById(int id) {
+        return Configs.LOCATIONS.stream()
+                .filter(location -> Objects.equals(location.id(), id))
+                .findFirst()
+                .orElseThrow();
     }
 }

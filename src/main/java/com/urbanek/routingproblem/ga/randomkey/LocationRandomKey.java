@@ -1,4 +1,4 @@
 package com.urbanek.routingproblem.ga.randomkey;
 
-public record LocationRandomKey(String employeeId, double randomKey) {
+public record LocationRandomKey(int locationId, String employeeId, double randomKey) {
 }
