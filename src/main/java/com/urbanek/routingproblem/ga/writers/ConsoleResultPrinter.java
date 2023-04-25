@@ -1,6 +1,7 @@
 package com.urbanek.routingproblem.ga.writers;
 
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.ga.statistics.GenerationStatistics;
 import com.urbanek.routingproblem.ga.statistics.StatisticsAggregator;
 import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import com.urbanek.routingproblem.geo.locations.services.LocationService;
@@ -40,14 +41,15 @@ public class ConsoleResultPrinter {
 
                 });
         joiner.add("Summary");
-        LocationRandomKeySeries bestResult = statisticsAggregator.getBestResult();
-        //TODO add print of generation when result happend
-        joiner.add("Best series ever: ");
-        joiner.add("Generation ");
-        addSingleSeriesStat(joiner, bestResult);
+        GenerationStatistics seriesWithBestResult = statisticsAggregator.getSeriesWithBestResult();
+        joiner.add("Best series ever ");
+        joiner.add("Generation " + seriesWithBestResult.generationNumber());
+        addSingleSeriesStat(joiner, seriesWithBestResult.bestResult());
+        joiner.add("");
+        GenerationStatistics seriesWithWorstResult = statisticsAggregator.getSeriesWithWorstResult();
         joiner.add("Worst series ever: ");
-        joiner.add("Generation ");
-        addSingleSeriesStat(joiner, statisticsAggregator.getWorstResult());
+        joiner.add("Generation " + seriesWithWorstResult.generationNumber());
+        addSingleSeriesStat(joiner, seriesWithWorstResult.worstResult());
 
         log.info(joiner.toString());
     }

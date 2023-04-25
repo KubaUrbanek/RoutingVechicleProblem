@@ -11,18 +11,22 @@ import java.util.List;
 public class StatisticsAggregator {
     private final List<GenerationStatistics> generationStats = new ArrayList<>();
 
-    public LocationRandomKeySeries getBestResult() {
-        return generationStats.stream()
+    public GenerationStatistics getSeriesWithBestResult() {
+        LocationRandomKeySeries bestRandomKeySeries = generationStats.stream()
                 .map(GenerationStatistics::bestResult)
                 .min(Comparator.comparingDouble(LocationRandomKeySeries::fitnessScore))
                 .orElseThrow();
+        return findLocationWithRandomKeySeries(bestRandomKeySeries);
     }
 
-    public LocationRandomKeySeries getWorstResult() {
-        return generationStats.stream()
+
+
+    public GenerationStatistics getSeriesWithWorstResult() {
+        LocationRandomKeySeries worstRandomKeySeries = generationStats.stream()
                 .map(GenerationStatistics::worstResult)
                 .max(Comparator.comparingDouble(LocationRandomKeySeries::fitnessScore))
                 .orElseThrow();
+        return findLocationWithRandomKeySeries(worstRandomKeySeries);
     }
 
     public List<GenerationStatistics> getStats() {
@@ -42,17 +46,41 @@ public class StatisticsAggregator {
                 .toList();
 
         statsBuilder
-                .bestResult(sortedGeneration.get(0))
-                .worstResult(sortedGeneration.get(sortedGeneration.size() - 1))
-                .averageFitness(sortedGeneration.stream()
-                        .mapToDouble(LocationRandomKeySeries::fitnessScore)
-                        .average()
-                        .orElseThrow())
-                .totalFitness(sortedGeneration.stream()
-                        .mapToDouble(LocationRandomKeySeries::fitnessScore)
-                        .sum())
+                .bestResult(getSeriesWithBestResult(sortedGeneration))
+                .worstResult(getSeriesWithWorstResult(sortedGeneration))
+                .averageFitness(getAverageFitness(sortedGeneration))
+                .totalFitness(getTotalFitness(sortedGeneration))
                 .generationNumber(generationNumber);
 
         generationStats.add(statsBuilder.build());
+    }
+
+    private static LocationRandomKeySeries getSeriesWithWorstResult(List<LocationRandomKeySeries> sortedGeneration) {
+        return sortedGeneration.get(sortedGeneration.size() - 1);
+    }
+
+    private static LocationRandomKeySeries getSeriesWithBestResult(List<LocationRandomKeySeries> sortedGeneration) {
+        return sortedGeneration.get(0);
+    }
+
+    private static double getTotalFitness(List<LocationRandomKeySeries> sortedGeneration) {
+        return sortedGeneration.stream()
+                .mapToDouble(LocationRandomKeySeries::fitnessScore)
+                .sum();
+    }
+
+    private static double getAverageFitness(List<LocationRandomKeySeries> sortedGeneration) {
+        return sortedGeneration.stream()
+                .mapToDouble(LocationRandomKeySeries::fitnessScore)
+                .average()
+                .orElseThrow();
+    }
+
+    private GenerationStatistics findLocationWithRandomKeySeries(LocationRandomKeySeries randomKeySeries) {
+        return generationStats.stream()
+                .filter(series -> series.generation()
+                        .stream()
+                        .anyMatch(locationRandomKeySeries -> randomKeySeries == locationRandomKeySeries))
+                .findFirst().orElseThrow();
     }
 }
