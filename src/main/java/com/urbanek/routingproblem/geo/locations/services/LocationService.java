@@ -10,5 +10,7 @@ public interface LocationService {
 
     List<Location> getAllLocations();
 
+    List<Location> getAllCustomerLocations();
+
     Map<String, List<Location>> getOrderedLocationGroupByEmployee(List<LocationRandomKey> locationRandomKeys);
 }

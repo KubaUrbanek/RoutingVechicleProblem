@@ -27,7 +27,7 @@ public class PopulationGenerator {
     public List<LocationRandomKeySeries> generateUsingRandomKeys(Map<DistanceIdentifier, Double> distances) {
         return IntStream.rangeClosed(1, Configs.POPULATION_AMOUNT)
                 .mapToObj(i -> {
-                    List<LocationRandomKey> locationRandomKeys = locationService.getAllLocations().stream()
+                    List<LocationRandomKey> locationRandomKeys = locationService.getAllCustomerLocations().stream()
                             .map(location -> new LocationRandomKey(location.id(), employeeService.getRandomEmployee().getId(), Math.random()))
                             .collect(Collectors.toList());
                     return new LocationRandomKeySeries(locationRandomKeys, fitnessCalculator.calculateFitness(distances, locationRandomKeys)

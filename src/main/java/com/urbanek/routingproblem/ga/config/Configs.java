@@ -1,5 +1,6 @@
 package com.urbanek.routingproblem.ga.config;
 
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.geo.locations.dtos.Coordinates;
 import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import com.urbanek.routingproblem.employes.dtos.Employee;
@@ -29,7 +30,7 @@ public class Configs {
             new Employee("Random", 200),
             new Employee("Wylonacznik", 350));
 
-    public static final int DEPOT = 0;
+    public static final Location DEPOT =  new Location(0, new Coordinates(0, 0), 0);
     public static final int ELITE_AMOUNT = 1;
     public static final int POPULATION_AMOUNT = 100;
 

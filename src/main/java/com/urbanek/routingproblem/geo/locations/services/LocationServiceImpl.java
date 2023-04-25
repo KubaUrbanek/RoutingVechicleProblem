@@ -1,30 +1,44 @@
 package com.urbanek.routingproblem.geo.locations.services;
 
 import com.urbanek.routingproblem.employes.services.EmployeeService;
-import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
 import com.urbanek.routingproblem.ga.config.Configs;
+import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
 import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
     private final EmployeeService employeeService;
 
+    @Override
     public List<Location> getAllLocations() {
-        return Configs.LOCATIONS;
+        return Stream.concat(getAllCustomerLocations().stream(), Stream.of(Configs.DEPOT))
+                .toList();
     }
 
+    @Override
+    public List<Location> getAllCustomerLocations() {
+        return Configs.LOCATIONS;
+    }
+    @Override
     public Map<String, List<Location>> getOrderedLocationGroupByEmployee(List<LocationRandomKey> locationRandomKeys) {
-
-        Map<String, List<Location>> orderedLocationIndexesGroupByEmployee = groupLocationByEmployees(locationRandomKeys);
+        List<LocationRandomKey> locationRandomKeysCopy = new ArrayList<>(locationRandomKeys);
+        Map<String, List<Location>> orderedLocationIndexesGroupByEmployee = groupLocationByEmployees(locationRandomKeysCopy);
         fillWithMissingEmployees(orderedLocationIndexesGroupByEmployee);
+        addDepotToAllEmployees(orderedLocationIndexesGroupByEmployee);
 
         return orderedLocationIndexesGroupByEmployee;
+    }
+
+    private void addDepotToAllEmployees(Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
+        orderedLocationIndexesGroupByEmployee.values()
+                .forEach(locations -> locations.add(0, Configs.DEPOT));
     }
 
     private Map<String, List<Location>> groupLocationByEmployees(List<LocationRandomKey> locationRandomKeys) {
@@ -50,7 +64,7 @@ public class LocationServiceImpl implements LocationService {
     private void fillWithMissingEmployees(Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
         employeeService.getAllEmployees().stream()
                 .filter(employee -> !orderedLocationIndexesGroupByEmployee.containsKey(employee.getId()))
-                .forEach(employee -> orderedLocationIndexesGroupByEmployee.put(employee.getId(), Collections.emptyList()));
+                .forEach(employee -> orderedLocationIndexesGroupByEmployee.put(employee.getId(), new ArrayList<>()));
     }
 
     private List<Integer> getLocationIdsInOrder(List<LocationRandomKey> locationRandomKeys) {
@@ -61,7 +75,8 @@ public class LocationServiceImpl implements LocationService {
     }
 
     private Location getLocationById(int id) {
-        return Configs.LOCATIONS.stream()
+        return getAllLocations()
+                .stream()
                 .filter(location -> Objects.equals(location.id(), id))
                 .findFirst()
                 .orElseThrow();
