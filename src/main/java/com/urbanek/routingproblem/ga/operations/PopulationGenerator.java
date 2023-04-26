@@ -7,6 +7,7 @@ import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
 import com.urbanek.routingproblem.geo.locations.services.LocationService;
+import com.urbanek.routingproblem.utils.aspects.ExecutionTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

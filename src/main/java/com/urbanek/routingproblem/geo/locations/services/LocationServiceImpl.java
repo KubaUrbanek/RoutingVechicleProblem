@@ -3,29 +3,36 @@ package com.urbanek.routingproblem.geo.locations.services;
 import com.urbanek.routingproblem.employes.services.EmployeeService;
 import com.urbanek.routingproblem.ga.config.Configs;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
+import com.urbanek.routingproblem.geo.locations.daos.LocationDao;
+import com.urbanek.routingproblem.geo.locations.dtos.Coordinates;
 import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.utils.aspects.ExecutionTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
+    private final LocationDao locationDao;
     private final EmployeeService employeeService;
+    private final Random rand = new Random();
 
     @Override
     public List<Location> getAllLocations() {
-        return Stream.concat(getAllCustomerLocations().stream(), Stream.of(Configs.DEPOT))
+        return Stream.concat(locationDao.getAllCustomLocations().stream(), Stream.of(Configs.DEPOT))
                 .toList();
     }
 
     @Override
-    public List<Location> getAllCustomerLocations() {
-        return Configs.LOCATIONS;
+    public Collection<Location> getAllCustomerLocations() {
+        return locationDao.getAllCustomLocations();
     }
+
     @Override
     public Map<String, List<Location>> getOrderedLocationGroupByEmployee(List<LocationRandomKey> locationRandomKeys) {
         List<LocationRandomKey> locationRandomKeysCopy = new ArrayList<>(locationRandomKeys);
@@ -36,6 +43,14 @@ public class LocationServiceImpl implements LocationService {
         return orderedLocationIndexesGroupByEmployee;
     }
 
+    @Override
+    @ExecutionTime
+    public void prepareRandomLocations(int amount) {
+        IntStream.rangeClosed(1, amount)
+                .forEach(id -> locationDao.add(new Location(id, new Coordinates(rand.nextDouble(100), rand.nextDouble(100)),
+                        rand.nextInt(100))));
+    }
+
     private void addDepotToAllEmployees(Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
         orderedLocationIndexesGroupByEmployee.values()
                 .forEach(locations -> locations.add(0, Configs.DEPOT));
@@ -43,22 +58,18 @@ public class LocationServiceImpl implements LocationService {
 
     private Map<String, List<Location>> groupLocationByEmployees(List<LocationRandomKey> locationRandomKeys) {
         List<Integer> locationIdsInOrder = getLocationIdsInOrder(locationRandomKeys);
+        Map<Integer, String> locationToEmployeeIdMap = locationRandomKeys.stream()
+                .collect(Collectors.toUnmodifiableMap(LocationRandomKey::getLocationId,
+                        LocationRandomKey::getEmployeeId,
+                        (first, second) -> first));
 
         return new HashMap<>(locationIdsInOrder.stream()
-                .collect(Collectors.toUnmodifiableMap(locationId -> getEmployeeIdByLocation(locationRandomKeys, locationId),
+                .collect(Collectors.toUnmodifiableMap(locationToEmployeeIdMap::get,
                         (locationId) -> new ArrayList<>(Collections.singletonList(getLocationById(locationId))),
                         (existingList, newList) -> {
                             existingList.addAll(newList);
                             return existingList;
                         })));
-    }
-
-    private static String getEmployeeIdByLocation(List<LocationRandomKey> locationRandomKeys, Integer locationId) {
-        return locationRandomKeys.stream()
-                .filter(locationRandomKey -> Objects.equals(locationRandomKey.getLocationId(), locationId))
-                .findFirst()
-                .orElseThrow()
-                .getEmployeeId();
     }
 
     private void fillWithMissingEmployees(Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
@@ -75,10 +86,6 @@ public class LocationServiceImpl implements LocationService {
     }
 
     private Location getLocationById(int id) {
-        return getAllLocations()
-                .stream()
-                .filter(location -> Objects.equals(location.id(), id))
-                .findFirst()
-                .orElseThrow();
+        return locationDao.getLocationById(id);
     }
 }

@@ -2,6 +2,7 @@ package com.urbanek.routingproblem.ga.operations;
 
 import com.urbanek.routingproblem.ga.config.Configs;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.utils.aspects.ExecutionTime;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -12,8 +13,8 @@ import java.util.stream.IntStream;
 
 @Component
 public class TournamentSelection {
-    Random rand = new Random();
-
+    private final Random rand = new Random();
+    @ExecutionTime
     public List<LocationRandomKeySeries> performSelection(List<LocationRandomKeySeries> locationRandomKeySeriesList) {
         List<LocationRandomKeySeries> selectionResult = new ArrayList<>();
         while (selectionResult.size() != locationRandomKeySeriesList.size()) {

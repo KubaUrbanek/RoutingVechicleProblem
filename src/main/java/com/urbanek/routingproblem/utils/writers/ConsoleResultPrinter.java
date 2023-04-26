@@ -1,4 +1,4 @@
-package com.urbanek.routingproblem.ga.writers;
+package com.urbanek.routingproblem.utils.writers;
 
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.ga.statistics.GenerationStatistics;
@@ -25,31 +25,31 @@ public class ConsoleResultPrinter {
         StringJoiner joiner = new StringJoiner("\n");
         statisticsAggregator.getStats()
                 .forEach(stat -> {
-                    joiner.add("Generation " + stat.generationNumber());
+                    joiner.add("Generation " + stat.getGenerationNumber());
 
                     joiner.add("Best result: ");
-                    addSingleSeriesStat(joiner, stat.bestResult());
+                    addSingleSeriesStat(joiner, stat.getBestResult());
                     joiner.add("");
 
                     joiner.add("Worst result: ");
-                    addSingleSeriesStat(joiner, stat.worstResult());
+                    addSingleSeriesStat(joiner, stat.getWorstResult());
                     joiner.add("");
 
-                    joiner.add("Total fitness: " + stat.totalFitness());
-                    joiner.add("Average fitness: " + stat.averageFitness());
+                    joiner.add("Total fitness: " + stat.getTotalFitness());
+                    joiner.add("Average fitness: " + stat.getAverageFitness());
                     joiner.add("");
 
                 });
         joiner.add("Summary");
         GenerationStatistics seriesWithBestResult = statisticsAggregator.getSeriesWithBestResult();
         joiner.add("Best series ever ");
-        joiner.add("Generation " + seriesWithBestResult.generationNumber());
-        addSingleSeriesStat(joiner, seriesWithBestResult.bestResult());
+        joiner.add("Generation " + seriesWithBestResult.getGenerationNumber());
+        addSingleSeriesStat(joiner, seriesWithBestResult.getBestResult());
         joiner.add("");
         GenerationStatistics seriesWithWorstResult = statisticsAggregator.getSeriesWithWorstResult();
         joiner.add("Worst series ever: ");
-        joiner.add("Generation " + seriesWithWorstResult.generationNumber());
-        addSingleSeriesStat(joiner, seriesWithWorstResult.worstResult());
+        joiner.add("Generation " + seriesWithWorstResult.getGenerationNumber());
+        addSingleSeriesStat(joiner, seriesWithWorstResult.getWorstResult());
 
         log.info(joiner.toString());
     }

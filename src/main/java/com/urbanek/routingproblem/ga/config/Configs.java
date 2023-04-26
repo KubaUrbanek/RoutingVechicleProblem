@@ -1,9 +1,8 @@
 package com.urbanek.routingproblem.ga.config;
 
-import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.employes.dtos.Employee;
 import com.urbanek.routingproblem.geo.locations.dtos.Coordinates;
 import com.urbanek.routingproblem.geo.locations.dtos.Location;
-import com.urbanek.routingproblem.employes.dtos.Employee;
 
 import java.util.List;
 
@@ -32,11 +31,11 @@ public class Configs {
 
     public static final Location DEPOT =  new Location(0, new Coordinates(0, 0), 0);
     public static final int ELITE_AMOUNT = 1;
-    public static final int POPULATION_AMOUNT = 100;
+    public static final int POPULATION_AMOUNT = 500;
 
     public static final int GENERATION_AMOUNT = 100;
     public static final double CROSSOVER_RATE = 0.7;
-    public static final double MUTATION_RATE = 0.01;
-    public static final int TOURNAMENT_SIZE = 4;
+    public static final double MUTATION_RATE = 0.04;
+    public static final int TOURNAMENT_SIZE = 2;
 
 }

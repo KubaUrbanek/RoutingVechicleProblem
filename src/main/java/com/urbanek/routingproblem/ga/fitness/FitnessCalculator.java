@@ -1,8 +1,8 @@
 package com.urbanek.routingproblem.ga.fitness;
 
 import com.urbanek.routingproblem.ga.caches.DistanceFitnessCache;
+import com.urbanek.routingproblem.ga.caches.SeriesFitnessCalculatorCache;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
-import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
 import com.urbanek.routingproblem.geo.distances.services.DistanceIdentifierFactory;
 import com.urbanek.routingproblem.geo.locations.dtos.Location;
@@ -13,24 +13,47 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class FitnessCalculator {
-    private final List<DistanceFitnessCalculationListener> distanceFitnessCalculationListeners;
     private final DistanceFitnessCache distanceFitnessCache;
+    private final SeriesFitnessCalculatorCache seriesFitnessCalculatorCache;
     private final DistanceIdentifierFactory distanceIdentifierFactory;
     private final LocationService locationService;
 
     public double calculateFitness(Map<DistanceIdentifier, Double> distances, List<LocationRandomKey> locationRandomKeys) {
         Map<String, List<Location>> orderedLocationIndexesGroupByEmployee = locationService.getOrderedLocationGroupByEmployee(locationRandomKeys);
-        return orderedLocationIndexesGroupByEmployee.keySet()
-                .stream()
-                .map(orderedLocationIndexesGroupByEmployee::get)
-                .map((locations) -> getDistanceFitnessValue(distances, locations))
-                .reduce(Double::sum)
-                .orElseThrow();
+        return getFitnessValue(distances, orderedLocationIndexesGroupByEmployee);
+    }
+
+    private double getFitnessValue(Map<DistanceIdentifier, Double> distances, Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
+        String seriesIdentifier = prepareSeriesIdentifier(orderedLocationIndexesGroupByEmployee);
+        Double cacheValue = seriesFitnessCalculatorCache.getFitnessValue(seriesIdentifier);
+        if (Objects.nonNull(cacheValue)) {
+            return cacheValue;
+        } else {
+            Double fitnessValue = orderedLocationIndexesGroupByEmployee.keySet()
+                    .stream()
+                    .map(orderedLocationIndexesGroupByEmployee::get)
+                    .map((locations) -> getDistanceFitnessValue(distances, locations))
+                    .reduce(Double::sum)
+                    .orElseThrow();
+            seriesFitnessCalculatorCache.notify(seriesIdentifier, fitnessValue);
+            return fitnessValue;
+        }
+    }
+
+    private String prepareSeriesIdentifier(Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
+        StringJoiner joiner = new StringJoiner("-");
+        orderedLocationIndexesGroupByEmployee.forEach((key, value) -> {
+            joiner.add(key);
+            value.forEach(location ->
+                    joiner.add(String.valueOf(location.id())));
+        });
+        return joiner.toString();
     }
 
     private Double getDistanceFitnessValue(Map<DistanceIdentifier, Double> distances, List<Location> locations) {
@@ -40,7 +63,7 @@ public class FitnessCalculator {
 
         if (Objects.isNull(cachedValue)) {
             Double distanceFitnessValue = calculateDistanceFitnessValue(distances, locations);
-            distanceFitnessCalculationListeners.forEach(listener -> listener.notify(seriesIdentifier, distanceFitnessValue));
+            distanceFitnessCache.notify(seriesIdentifier, distanceFitnessValue);
             return distanceFitnessValue;
         }
         return cachedValue;

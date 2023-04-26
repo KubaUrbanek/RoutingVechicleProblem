@@ -6,11 +6,14 @@ import com.urbanek.routingproblem.ga.fitness.FitnessCalculator;
 import com.urbanek.routingproblem.ga.operations.*;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.ga.statistics.StatisticsAggregator;
-import com.urbanek.routingproblem.ga.writers.ConsoleResultPrinter;
+import com.urbanek.routingproblem.utils.aspects.ExecutionTime;
+import com.urbanek.routingproblem.utils.writers.ConsoleResultPrinter;
 import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
 import com.urbanek.routingproblem.geo.distances.services.DistanceCalculator;
 import com.urbanek.routingproblem.geo.locations.dtos.Location;
+import com.urbanek.routingproblem.geo.locations.services.LocationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -20,6 +23,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class VehicleRoutingProblemSolver {
     private final DistanceCalculator distanceCalculator;
     private final PopulationGenerator populationGenerator;
@@ -30,19 +34,21 @@ public class VehicleRoutingProblemSolver {
     private final FitnessCalculator fitnessCalculator;
     private final StatisticsAggregator statisticsAggregator;
     private final BitFlipMutation bitFlipMutation;
+    private final LocationService locationService;
 
     public void start() {
         assertInitialRules();
+        locationService.prepareRandomLocations(500);
         Map<DistanceIdentifier, Double> distances = distanceCalculator.calculateDistances();
         List<LocationRandomKeySeries> beginningPopulation = populationGenerator.generateUsingRandomKeys(distances);
         AtomicReference<List<LocationRandomKeySeries>> currentPopulation = new AtomicReference<>(beginningPopulation);
 
         IntStream.rangeClosed(1, Configs.GENERATION_AMOUNT).forEach(generationNumber -> {
-            statisticsAggregator.addGenerationStat(generationNumber, currentPopulation.get());
+            log.info("Current generation " + generationNumber);
             currentPopulation.set(performGaOperations(new ArrayList<>(currentPopulation.get())).stream()
                     .map(series -> Objects.isNull(series.fitnessScore()) ? recreateSeriesWithFitness(series, distances) : series)
                     .toList());
-
+            statisticsAggregator.addGenerationStat(generationNumber, currentPopulation.get());
         });
 
         resultPrinter.printPopulation(statisticsAggregator);
@@ -62,6 +68,7 @@ public class VehicleRoutingProblemSolver {
                 .toList();
     }
 
+    @ExecutionTime
     private LocationRandomKeySeries recreateSeriesWithFitness(LocationRandomKeySeries person, Map<DistanceIdentifier, Double> distances) {
         return LocationRandomKeySeries.builder()
                 .locationRandomKeys(person.locationRandomKeys())
@@ -69,8 +76,9 @@ public class VehicleRoutingProblemSolver {
                 .build();
     }
 
-    private static void assertInitialRules() {
-        Double totalRequiredWork = Configs.LOCATIONS.stream()
+    private void assertInitialRules() {
+        Double totalRequiredWork = locationService.getAllLocations()
+                .stream()
                 .map(Location::requiredTime)
                 .reduce(Double::sum)
                 .orElse((double) 0);

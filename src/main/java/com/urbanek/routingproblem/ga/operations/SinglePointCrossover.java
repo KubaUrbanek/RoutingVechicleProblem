@@ -3,6 +3,7 @@ package com.urbanek.routingproblem.ga.operations;
 import com.urbanek.routingproblem.ga.config.Configs;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.utils.aspects.ExecutionTime;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ public class SinglePointCrossover {
     public static final int PARENTS_AMOUNT = 2;
     private final Random rand = new Random();
 
+    @ExecutionTime
     public List<LocationRandomKeySeries> performCrossover(List<LocationRandomKeySeries> locationRandomKeySeries) {
         AtomicInteger seriesIndex = new AtomicInteger(-1);
 

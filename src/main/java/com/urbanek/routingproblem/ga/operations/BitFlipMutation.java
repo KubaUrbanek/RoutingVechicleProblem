@@ -3,18 +3,21 @@ package com.urbanek.routingproblem.ga.operations;
 import com.urbanek.routingproblem.ga.config.Configs;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKey;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
+import com.urbanek.routingproblem.utils.aspects.ExecutionTime;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 @Component
+@Slf4j
 public class BitFlipMutation {
     private final Random rand = new Random();
 
+    @ExecutionTime
     public List<LocationRandomKeySeries> performMutation(List<LocationRandomKeySeries> locationRandomKeySeries) {
-        return locationRandomKeySeries.stream()
+        return locationRandomKeySeries.parallelStream()
                 .map(this::mutateSeries)
                 .toList();
     }
