@@ -55,10 +55,10 @@ public class LocationServiceImpl implements LocationService {
 
     private static String getEmployeeIdByLocation(List<LocationRandomKey> locationRandomKeys, Integer locationId) {
         return locationRandomKeys.stream()
-                .filter(locationRandomKey -> Objects.equals(locationRandomKey.locationId(), locationId))
+                .filter(locationRandomKey -> Objects.equals(locationRandomKey.getLocationId(), locationId))
                 .findFirst()
                 .orElseThrow()
-                .employeeId();
+                .getEmployeeId();
     }
 
     private void fillWithMissingEmployees(Map<String, List<Location>> orderedLocationIndexesGroupByEmployee) {
@@ -69,8 +69,8 @@ public class LocationServiceImpl implements LocationService {
 
     private List<Integer> getLocationIdsInOrder(List<LocationRandomKey> locationRandomKeys) {
         return locationRandomKeys.stream()
-                .sorted(Comparator.comparingDouble(LocationRandomKey::randomKey))
-                .map(LocationRandomKey::locationId)
+                .sorted(Comparator.comparingDouble(LocationRandomKey::getRandomKey))
+                .map(LocationRandomKey::getLocationId)
                 .toList();
     }
 

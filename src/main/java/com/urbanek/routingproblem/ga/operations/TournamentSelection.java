@@ -18,14 +18,17 @@ public class TournamentSelection {
         List<LocationRandomKeySeries> selectionResult = new ArrayList<>();
         while (selectionResult.size() != locationRandomKeySeriesList.size()) {
             List<LocationRandomKeySeries> locationRandomKeySeriesCopy = new ArrayList<>(locationRandomKeySeriesList);
-            LocationRandomKeySeries tournamentWinner = IntStream.rangeClosed(0, Configs.TOURNAMENT_SIZE)
-                    //TODO location random key series copy is empty and throws exception - protect against it
+            LocationRandomKeySeries tournamentWinner = IntStream.range(0, getTournamentSize(locationRandomKeySeriesCopy))
                     .mapToObj(i -> pickRandomLocationSeries(locationRandomKeySeriesCopy))
                     .min(Comparator.comparingDouble(LocationRandomKeySeries::fitnessScore))
                     .orElseThrow();
             selectionResult.add(tournamentWinner);
         }
         return selectionResult;
+    }
+
+    private static int getTournamentSize(List<LocationRandomKeySeries> route) {
+        return Math.min(route.size(), Configs.TOURNAMENT_SIZE);
     }
 
     private LocationRandomKeySeries pickRandomLocationSeries(List<LocationRandomKeySeries> locationRandomKeySeries) {

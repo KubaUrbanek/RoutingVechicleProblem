@@ -1,4 +1,14 @@
 package com.urbanek.routingproblem.ga.randomkey;
 
-public record LocationRandomKey(int locationId, String employeeId, double randomKey) {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@AllArgsConstructor
+@Getter
+public class LocationRandomKey {
+    private int locationId;
+    private String employeeId;
+    @Setter
+    private double randomKey;
 }

@@ -3,10 +3,7 @@ package com.urbanek.routingproblem.ga.solvers;
 import com.urbanek.routingproblem.employes.dtos.Employee;
 import com.urbanek.routingproblem.ga.config.Configs;
 import com.urbanek.routingproblem.ga.fitness.FitnessCalculator;
-import com.urbanek.routingproblem.ga.operations.EliteSelection;
-import com.urbanek.routingproblem.ga.operations.PopulationGenerator;
-import com.urbanek.routingproblem.ga.operations.SinglePointCrossover;
-import com.urbanek.routingproblem.ga.operations.TournamentSelection;
+import com.urbanek.routingproblem.ga.operations.*;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.ga.statistics.StatisticsAggregator;
 import com.urbanek.routingproblem.ga.writers.ConsoleResultPrinter;
@@ -16,10 +13,7 @@ import com.urbanek.routingproblem.geo.locations.dtos.Location;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -35,6 +29,7 @@ public class VehicleRoutingProblemSolver {
     private final SinglePointCrossover singlePointCrossover;
     private final FitnessCalculator fitnessCalculator;
     private final StatisticsAggregator statisticsAggregator;
+    private final BitFlipMutation bitFlipMutation;
 
     public void start() {
         assertInitialRules();
@@ -55,12 +50,14 @@ public class VehicleRoutingProblemSolver {
 
     }
 
-    private List<LocationRandomKeySeries> performGaOperations(List<LocationRandomKeySeries> population) {
-        List<LocationRandomKeySeries> elitePopulation = eliteSelection.getElite(population);
-        population.removeAll(elitePopulation);
+    private List<LocationRandomKeySeries> performGaOperations(List<LocationRandomKeySeries> initialPopulation) {
+        List<LocationRandomKeySeries> elitePopulation = eliteSelection.getElite(initialPopulation);
+        initialPopulation.removeAll(elitePopulation);
 
-        return Stream.concat(Stream.of(tournamentSelection.performSelection(population))
-                                .flatMap(populationGenerator -> singlePointCrossover.performCrossover(populationGenerator).stream()),
+        return Stream.concat(Stream.of(tournamentSelection.performSelection(initialPopulation))
+                                .map(singlePointCrossover::performCrossover)
+                                .map(bitFlipMutation::performMutation)
+                                .flatMap(Collection::stream),
                         elitePopulation.stream())
                 .toList();
     }
