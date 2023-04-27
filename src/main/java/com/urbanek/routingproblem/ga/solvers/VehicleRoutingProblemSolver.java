@@ -1,12 +1,13 @@
 package com.urbanek.routingproblem.ga.solvers;
 
 import com.urbanek.routingproblem.employes.dtos.Employee;
+import com.urbanek.routingproblem.employes.services.EmployeeService;
 import com.urbanek.routingproblem.ga.config.Configs;
 import com.urbanek.routingproblem.ga.fitness.FitnessCalculator;
 import com.urbanek.routingproblem.ga.operations.*;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import com.urbanek.routingproblem.ga.statistics.StatisticsAggregator;
-import com.urbanek.routingproblem.utils.aspects.ExecutionTime;
+import com.urbanek.routingproblem.utils.drawer.GraphDrawer;
 import com.urbanek.routingproblem.utils.writers.ConsoleResultPrinter;
 import com.urbanek.routingproblem.geo.distances.dtos.DistanceIdentifier;
 import com.urbanek.routingproblem.geo.distances.services.DistanceCalculator;
@@ -35,10 +36,17 @@ public class VehicleRoutingProblemSolver {
     private final StatisticsAggregator statisticsAggregator;
     private final BitFlipMutation bitFlipMutation;
     private final LocationService locationService;
+    private final EmployeeService employeeService;
 
     public void start() {
+        System.setProperty("java.awt.headless", "false");
+
         assertInitialRules();
-        locationService.prepareRandomLocations(500);
+        int locationAmount = Configs.LOCATION_AMOUNT;
+        locationService.prepareRandomLocations(locationAmount);
+        GraphDrawer graphDrawer = new GraphDrawer(locationService, statisticsAggregator,
+                employeeService, locationAmount);
+        graphDrawer.setVisible(true);
         Map<DistanceIdentifier, Double> distances = distanceCalculator.calculateDistances();
         List<LocationRandomKeySeries> beginningPopulation = populationGenerator.generateUsingRandomKeys(distances);
         AtomicReference<List<LocationRandomKeySeries>> currentPopulation = new AtomicReference<>(beginningPopulation);
@@ -49,6 +57,7 @@ public class VehicleRoutingProblemSolver {
                     .map(series -> Objects.isNull(series.fitnessScore()) ? recreateSeriesWithFitness(series, distances) : series)
                     .toList());
             statisticsAggregator.addGenerationStat(generationNumber, currentPopulation.get());
+            graphDrawer.addPoints(generationNumber);
         });
 
         resultPrinter.printPopulation(statisticsAggregator);
@@ -68,7 +77,6 @@ public class VehicleRoutingProblemSolver {
                 .toList();
     }
 
-    @ExecutionTime
     private LocationRandomKeySeries recreateSeriesWithFitness(LocationRandomKeySeries person, Map<DistanceIdentifier, Double> distances) {
         return LocationRandomKeySeries.builder()
                 .locationRandomKeys(person.locationRandomKeys())

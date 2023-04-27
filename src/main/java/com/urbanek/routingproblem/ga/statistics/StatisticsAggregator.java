@@ -3,33 +3,33 @@ package com.urbanek.routingproblem.ga.statistics;
 import com.urbanek.routingproblem.ga.randomkey.LocationRandomKeySeries;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class StatisticsAggregator {
-    private final List<GenerationStatistics> generationStats = new ArrayList<>();
+    private final Map<Integer, GenerationStatistics> generationStats = new HashMap<>();
 
     public GenerationStatistics getSeriesWithBestResult() {
-        LocationRandomKeySeries bestRandomKeySeries = generationStats.stream()
+        LocationRandomKeySeries bestRandomKeySeries = generationStats.values()
+                .stream()
                 .map(GenerationStatistics::getBestResult)
                 .min(Comparator.comparingDouble(LocationRandomKeySeries::fitnessScore))
                 .orElseThrow();
-        return findLocationWithRandomKeySeries(bestRandomKeySeries);
+        return findStatsWithRandomKeySeries(bestRandomKeySeries);
     }
 
 
     public GenerationStatistics getSeriesWithWorstResult() {
-        LocationRandomKeySeries worstRandomKeySeries = generationStats.stream()
+        LocationRandomKeySeries worstRandomKeySeries = generationStats.values()
+                .stream()
                 .map(GenerationStatistics::getWorstResult)
                 .max(Comparator.comparingDouble(LocationRandomKeySeries::fitnessScore))
                 .orElseThrow();
-        return findLocationWithRandomKeySeries(worstRandomKeySeries);
+        return findStatsWithRandomKeySeries(worstRandomKeySeries);
     }
 
-    public List<GenerationStatistics> getStats() {
-        return generationStats;
+    public Collection<GenerationStatistics> getStats() {
+        return generationStats.values();
     }
 
     public void reset() {
@@ -37,18 +37,20 @@ public class StatisticsAggregator {
     }
 
     public void addGenerationStat(int generationNumber, List<LocationRandomKeySeries> locationRandomKeySeries) {
-        generationStats.add(GenerationStatistics.builder()
+        generationStats.put(generationNumber, GenerationStatistics.builder()
                 .generation(locationRandomKeySeries)
                 .generationNumber(generationNumber)
                 .build());
     }
 
 
-    private GenerationStatistics findLocationWithRandomKeySeries(LocationRandomKeySeries randomKeySeries) {
-        return generationStats.stream()
+    private GenerationStatistics findStatsWithRandomKeySeries(LocationRandomKeySeries randomKeySeries) {
+        return generationStats.values()
+                .stream()
                 .filter(series -> series.getGeneration()
                         .stream()
                         .anyMatch(locationRandomKeySeries -> randomKeySeries == locationRandomKeySeries))
-                .findFirst().orElseThrow();
+                .findFirst()
+                .orElseThrow();
     }
 }
